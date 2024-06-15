@@ -59,5 +59,3 @@ class Trade(Message):
     symbol: StockSymbol
     price: Price
     execution_id: ExecutionID
-
-

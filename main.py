@@ -15,7 +15,7 @@ def add_order(order: AddOrder, conn: sqlite3.Connection):
     conn.execute("INSERT INTO orders (order_id, symbol, shares) VALUES (?, ?, ?)", data)
 
 
-def cancel_order(order: OrderExecuted, conn: sqlite3.Connection):
+def cancel_order(order: OrderCancel, conn: sqlite3.Connection):
     conn.execute("UPDATE orders SET shares = shares - ? WHERE order_id = ?", (order.shares, order.order_id))
     conn.execute("DELETE FROM orders WHERE shares = 0 and order_id = ?", (order.order_id,))
 
