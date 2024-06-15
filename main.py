@@ -45,13 +45,10 @@ def process_messages(conn: sqlite3.Connection, filename: str):
 
             if isinstance(msg, AddOrder):
                 add_order(msg, conn)
-            
             if isinstance(msg, OrderCancel):
                 cancel_order(msg, conn)
-            
             if isinstance(msg, OrderExecuted):
                 execute_order(msg, conn)
-                
             if isinstance(msg, Trade):
                 execute_trade(msg, conn)
 
