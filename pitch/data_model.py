@@ -8,8 +8,8 @@ from .basic_types import (
     Timestamp,
     OrderID,
     ExecutionID,
-    StockSymbol,
-    SharesQuantity,
+    Symbol,
+    Shares,
     Price,
 )
 
@@ -26,8 +26,8 @@ class AddOrder(Message):
 
     order_id: OrderID
     side: Side
-    shares: SharesQuantity
-    symbol: StockSymbol
+    shares: Shares
+    symbol: Symbol
     price: Price
     reserved: ReservedFlag
 
@@ -37,7 +37,7 @@ class OrderExecuted(Message):
     __message_type__ = MessageType.ORDER_EXECUTED
 
     order_id: OrderID
-    shares: SharesQuantity
+    shares: Shares
     execution_id: ExecutionID
 
 
@@ -46,7 +46,7 @@ class OrderCancel(Message):
     __message_type__ = MessageType.ORDER_CANCEL
 
     order_id: OrderID
-    shares: SharesQuantity
+    shares: Shares
 
 
 @dataclass
@@ -55,7 +55,7 @@ class Trade(Message):
 
     order_id: OrderID
     side: Side
-    shares: SharesQuantity
-    symbol: StockSymbol
+    shares: Shares
+    symbol: Symbol
     price: Price
     execution_id: ExecutionID
