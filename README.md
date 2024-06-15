@@ -4,7 +4,7 @@ For the solution, I've created a little framework for parsing PITCH messages, co
 
 The folder `tests` contains a couple of unit tests for `pitch` library, for an example.
 
-In in the solution, I ignored OrderCancel messages for the sake of simplicity. The output of the program is `answer.txt`.
+The solution itself consists two steps, to make it scalable: inserting orders to a SQLite database, and then retrieving the results with a query.
 
 
 # Task
