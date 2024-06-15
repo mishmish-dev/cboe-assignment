@@ -1,4 +1,3 @@
-from dataclasses import dataclass, make_dataclass
 from enum import Enum
 from io import RawIOBase
 from typing import Callable, Self
@@ -11,21 +10,21 @@ UNDERLYING_ATTR_NAME = "data"
 WHITESPACE_BYTES = b" "
 
 
-class MessageType(Enum):
-    ADD_ORDER = "A"
-    ORDER_EXECUTED = "E"
-    ORDER_CANCEL = "X"
-    TRADE = "P"
-
-
-class Side(Enum):
-    BUY = "B"
-    SELL = "S"
-
-
-class ReservedFlag(Enum):
-    YES = "Y"
-
+class ParsedEnum(Enum):
+    def __init_subclass__(cls, *, length: int, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+        
+        @classmethod
+        def parse(target, stream: RawIOBase) -> Self | None:
+            raw_str = parse_printable(stream, length=length)
+            try:
+                value = target(raw_str)
+            except ValueError:
+                return None
+            
+            return target(value)
+        
+        cls.parse = parse
 
 
 def is_alphanum(byte: int) -> bool:
@@ -43,7 +42,7 @@ def parse_number(stream: RawIOBase, *, length: int, base: int) -> int | None:
         return None
 
 
-def parse_alpha(stream: RawIOBase, *, length: int) -> str | None:
+def parse_alphabetic(stream: RawIOBase, *, length: int) -> str | None:
     read = stream.read(length)
     read = read.split(WHITESPACE_BYTES, maxsplit=1)[0]
     if not all(byte in LETTER_RANGE for byte in read):
@@ -61,55 +60,29 @@ def parse_printable(stream: RawIOBase, *, length: int) -> str | None:
 def create_string_field(name: str, *, length: int, parse_str: Callable[[RawIOBase, int], str | None]):
     @classmethod
     def parse(cls: type, stream: RawIOBase) -> Self | None:
-        value = parse_str(stream, length=cls.length)
+        value = parse_str(stream, length=length)
         if value is None:
             return None
         
         return cls(value)
 
-    return make_dataclass(
-        cls_name=name,
-        fields=[(UNDERLYING_ATTR_NAME, str)],
-        namespace=dict(length=length, parse=parse)
-    )
+    return type(name, (str,), dict(parse=parse))
 
 
-def create_enum_field(name: str, *, length: int, enum: Enum):
+def create_numeric_type(name: str, *, length: int, base: int):
     @classmethod
     def parse(cls: type, stream: RawIOBase) -> Self | None:
-        raw_str = parse_printable(stream, length=cls.length)
-        try:
-            value = enum(raw_str)
-        except ValueError:
-            return None
-        
-        return cls(value)
-
-    return make_dataclass(
-        cls_name=name,
-        fields=[(UNDERLYING_ATTR_NAME, enum)],
-        namespace=dict(length=length, parse=parse)
-    )
-
-
-def create_numeric_field(name: str, *, length: int, base: int):
-    @classmethod
-    def parse(cls: type, stream: RawIOBase) -> Self | None:
-        value = parse_number(stream, length=cls.length, base=cls.base)
+        value = parse_number(stream, length=length, base=base)
         if value is None:
             return None
         
         return cls(value)
 
-    return make_dataclass(
-        cls_name=name,
-        fields=[(UNDERLYING_ATTR_NAME, int)],
-        namespace=dict(length=length, base=base, parse=parse)
-    )
+    return type(name, (int,), dict(parse=parse))
 
 
-def create_alpha_field(name: str, *, length: int):
-    return create_string_field(name, length=length, parse_str=parse_alpha)
+def create_alphabetic_type(name: str, *, length: int):
+    return create_string_field(name, length=length, parse_str=parse_alphabetic)
 
 
 def create_printable_field(name: str, *, length: int):

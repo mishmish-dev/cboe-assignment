@@ -1,35 +1,35 @@
 from dataclasses import dataclass
 
-from ._message import Message
-from ._primitive_fields import (
-    create_alpha_field,
-    create_enum_field,
-    create_numeric_field,
+from ._base_message import BaseMessage
+from .basic_types import (
     MessageType,
-    ReservedFlag,
     Side,
+    ReservedFlag,
+    Timestamp,
+    OrderID,
+    ExecutionID,
+    StockSymbol,
+    SharesQuantity,
+    Price,
 )
 
-OrderID = create_numeric_field("OrderID", length=12, base=36)
-ExecutionID = create_numeric_field("ExecutionID", length=12, base=36)
 
-StockSymbol = create_alpha_field("StockSymbol", length=6)
-SharesQuantity = create_numeric_field("SharesQuantity", length=6, base=10)
-Price = create_numeric_field("Price", length=10, base=10)
-SideIndicator = create_enum_field("SideIndicator", length=1, enum=Side)
-ReservedIndicator = create_enum_field("ReservedIndicator", length=1, enum=ReservedFlag)
-
+@dataclass
+class Message(BaseMessage):
+    timestamp: Timestamp
+    type: MessageType
+    
 
 @dataclass
 class AddOrder(Message):
     __message_type__ = MessageType.ADD_ORDER
 
     order_id: OrderID
-    side: SideIndicator
+    side: Side
     shares: SharesQuantity
     symbol: StockSymbol
     price: Price
-    reserved: ReservedIndicator
+    reserved: ReservedFlag
 
 
 @dataclass
@@ -54,7 +54,7 @@ class Trade(Message):
     __message_type__ = MessageType.TRADE
 
     order_id: OrderID
-    side: SideIndicator
+    side: Side
     shares: SharesQuantity
     symbol: StockSymbol
     price: Price

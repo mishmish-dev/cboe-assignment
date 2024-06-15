@@ -1,8 +1,14 @@
-# cboe-assignment
+# Implementation notes
 
-This is home assignment Cboe gave me as a part of hiring process for Python Developer role
+I've created a little framework for parsing PITCH messages, contained in `pitch` Python package. It's used by the `main`
+module that solves the initial task. Should be pretty straightforward.
 
-## Original assignment text
+The folder `tests` contains a couple of unit tests for `pitch` library, for an example.
+
+In in the solution, I ignored OrderCancel messages for the sake of simplicity.
+
+
+# Task
 
 Hi Mishmish,
 
