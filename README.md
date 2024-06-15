@@ -1,11 +1,10 @@
-# Implementation notes
+# Solution notes
 
-I've created a little framework for parsing PITCH messages, contained in `pitch` Python package. It's used by the `main`
-module that solves the initial task. Should be pretty straightforward.
+For the solution, I've created a little framework for parsing PITCH messages, contained in `pitch` Python package. It's used by the `main` module that solves the initial task. Data and message types definitions are present in `pitch/basic_types.py` and `pitch/data_model.py` and can be easily extended. 
 
 The folder `tests` contains a couple of unit tests for `pitch` library, for an example.
 
-In in the solution, I ignored OrderCancel messages for the sake of simplicity.
+In in the solution, I ignored OrderCancel messages for the sake of simplicity. The output of the program is `answer.txt`.
 
 
 # Task

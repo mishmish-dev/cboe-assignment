@@ -57,7 +57,7 @@ def parse_printable(stream: RawIOBase, *, length: int) -> str | None:
     return read.decode()
 
 
-def create_string_field(name: str, *, length: int, parse_str: Callable[[RawIOBase, int], str | None]):
+def create_string_type(name: str, *, length: int, parse_str: Callable[[RawIOBase, int], str | None]):
     @classmethod
     def parse(cls: type, stream: RawIOBase) -> Self | None:
         value = parse_str(stream, length=length)
@@ -82,8 +82,8 @@ def create_numeric_type(name: str, *, length: int, base: int):
 
 
 def create_alphabetic_type(name: str, *, length: int):
-    return create_string_field(name, length=length, parse_str=parse_alphabetic)
+    return create_string_type(name, length=length, parse_str=parse_alphabetic)
 
 
-def create_printable_field(name: str, *, length: int):
-    return create_string_field(name, length=length, parse_str=parse_printable)
+def create_printable_type(name: str, *, length: int):
+    return create_string_type(name, length=length, parse_str=parse_printable)
