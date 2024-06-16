@@ -7,6 +7,8 @@ On the highest level, the solution works the following way:
 2. Record traded shares quantity by symbol for all trades (from OrderExecuted and Trade messages, using symbol from the mapping for the former)
 3. Aggregate the records and retrieve top stocks by volume 
 
+For the solution to be scalable, I implemented this steps in SQL database, using Python's built-in SQLite driver.
+
 ## Running
 
 The solution script is in `top_traded_stocks.py` file. It can read from STDIN or from a file with `-i` option and automatically decompress gzip archives with `-g` flag.
@@ -22,8 +24,6 @@ It's equivalent to
 ```shell
 gzip -cd pitch_example_data.gz | python3 top_traded_stocks.py -n 10
 ```
-
-For the solution to be scalable, I implemented this steps in SQL database, using Python's built-in SQLite driver.
 
 ## PITCH parsing
 
