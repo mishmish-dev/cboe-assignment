@@ -29,11 +29,11 @@ gzip -cd pitch_example_data.gz | python3 top_traded_stocks.py -n 10
 
 For parsing **PITCH** messages, I've created a little framework, contained in `pitch` Python package. The core of its API is `parse_message` function that consumes a Python synchronous byte-reader interface (which is implemented by `open()` in read-binary mode). The function optionally takes start and end sentinels for a message, allowing me to skip **S** characters and newlines.
 
-**PITCH** data types and message definitions are present in `pitch.basic_types` and `pitch.data_model`. I implemented only 4 message types but this can be easily extended.
+**PITCH** data types and message definitions are present in `pitch.basic_types` and `pitch.data_model`. I implemented only 4 message types but this can be easily extended. For simplicity, all datatypes are based on alphanumeric strings. Letter case is ignored.
 
 The folder `tests` contains a couple of unit tests for `pitch` library using **pytest**. To run them, install `pytest` and run it as a CLI in the root folder.
 
-Many things that are very important for production code, like logging and functional tests, are not included due to limited time. Other production code concerns are concurrent access, asynchrony and error handling, but they require much more specific requirements. 
+Many things that are very important for production code, like logging and functional tests, are not included due to limited time. Other production code concerns are concurrent access, asynchrony and error handling, but they require much more specific requirements.
 
 ## Error handling
 

@@ -3,40 +3,31 @@ from io import RawIOBase
 from typing import Self
 
 
-DIGIT_RANGE = range(ord(b"0"), ord(b"9") + 1)
-LETTER_RANGE = range(ord(b"A"), ord(b"Z") + 1)
-WHITESPACE_BYTES = b" "
-
-
-def is_alphanum(byte: int) -> bool:
-    return byte in DIGIT_RANGE or byte in LETTER_RANGE
-
-
 def parse_number(stream: RawIOBase, *, length: int, base: int) -> int | None:
-    read = stream.read(length)
-    if len(read) != length or not all(map(is_alphanum, read)):
+    raw = stream.read(length)
+    if len(raw) != length or not raw.isalnum():
         return None
     
     try:
-        return int(read, base=base)
+        return int(raw, base=base)
     except ValueError:
         return None
 
 
-def parse_alphabetic(stream: RawIOBase, *, length: int) -> str | None:
-    read = stream.read(length)
-    if len(read) != length:
+def parse_alphanumeric(stream: RawIOBase, *, length: int) -> str | None:
+    raw = stream.read(length)
+    if len(raw) != length:
         return None
     
-    read = read.split(WHITESPACE_BYTES, maxsplit=1)[0]
-    if all(byte in LETTER_RANGE for byte in read):
-        return read.decode()
+    raw = raw.rstrip()
+    if raw.isalnum():
+        return raw.decode()
 
 
-def create_alphabetic_type(name: str, *, length: int):
+def create_alphanumeric_type(name: str, *, length: int):
     @classmethod
     def parse(cls: type, stream: RawIOBase) -> Self | None:
-        value = parse_alphabetic(stream, length=length)
+        value = parse_alphanumeric(stream, length=length)
         if value is not None:
             return cls(value)
 
@@ -59,7 +50,7 @@ class ParsedEnum(Enum):
         
         @classmethod
         def parse(target, stream: RawIOBase) -> Self | None:
-            raw_str = parse_alphabetic(stream, length=length)
+            raw_str = parse_alphanumeric(stream, length=length)
             try:
                 return target(raw_str)
             except ValueError:
