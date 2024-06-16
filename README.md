@@ -1,17 +1,38 @@
-# Solution notes
+# Implementation notes
 
-The solution for the task is found in `main.py` file. It is broken into 2 steps to make it scalable:
-1. Inserting orders to a SQLite database
-2. Retrieving the top results with a query
+## Overview
 
-The script takes decompressed **PITCH** message stream from the standart input, so the way to run it is
+On the highest level, the solution works the following way:
+1. Maintain a mapping from OrderID to symbol (by recording AddOrder events)
+2. Record traded shares quantity by symbol for all trades (from OrderExecuted and Trade messages, using symbol from the mapping for the former)
+3. Aggregate the records and retrieve top stocks by volume 
+
+## Running
+
+The solution script is in `main.py` file. It can read from STDIN or from a file with `-i` option and automatically decompress gzip archives with `-g` flag. The number of top stocks to show can be also adjusted with the `-n` option.
+To explore the created SQLite database, you can output it to a file with `-f`.
+
+Example run command:
 ```shell
-gzip -cd pitch_example_data.gz | python3 main.py
+python3 main.py -i pitch_example_data.gz -n 10 -g
 ```
 
-For parsing **PITCH** messages, I've created a little framework, contained in `pitch` Python package. The core of its API is `parse_message` function that consumes a Python synchronous byte-reader interface, plus optionally takes start and end sentinels for a message. **PITCH** data types and message definitions are present in `pitch.basic_types` and `pitch.data_model`. I implemented only 4 message types but this can be easily extended.
+It's equivalent to
+```shell
+gzip -cd pitch_example_data.gz | python3 main.py -n 10
+```
 
-The folder `tests` contains a couple of unit tests for `pitch` library using **pytest**. I tried to avoid raising exceptions and return `None` in nasty cases. Many things that are very important for production code, like logging, are not included due to limited time. Other production code concerns are concurrent access, asynchrony and error handling, but they require much more specific requirements to address.
+For the solution to be scalable, I implemented this steps in SQL database, using Python's built-in SQLite driver.
+
+## PITCH parsing
+
+For parsing **PITCH** messages, I've created a little framework, contained in `pitch` Python package. The core of its API is `parse_message` function that consumes a Python synchronous byte-reader interface (which is implemented by `open()` in read-binary mode). The function optionally takes start and end sentinels for a message, allowing me to skip **S** characters and newlines.
+
+**PITCH** data types and message definitions are present in `pitch.basic_types` and `pitch.data_model`. I implemented only 4 message types but this can be easily extended.
+
+The folder `tests` contains a couple of unit tests for `pitch` library using **pytest**. To run them, install `pytest` and run it as a CLI in the root folder.
+
+Many things that are very important for production code, like logging and functional tests, are not included due to limited time. Other production code concerns are concurrent access, asynchrony and error handling, but they require much more specific requirements to address. I tried to avoid raising exceptions and return `None` in nasty cases, but this error handling is far from perfect.
 
 
 # Original task wording
