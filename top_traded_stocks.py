@@ -9,13 +9,17 @@ from pitch import parse_message, AddOrder, OrderCancel, OrderExecuted, Trade
 from pitch import ExecutionID, OrderID, Shares, Symbol
 
 
-def init_tables(conn: sqlite3.Connection):
+def init_tables(conn: sqlite3.Connection, *, overwrite: bool):
+    if overwrite:
+        conn.execute("DROP TABLE IF EXISTS open_orders")
+        conn.execute("DROP TABLE IF EXISTS traded")
+
     conn.execute("""
-        CREATE TABLE open_orders
+        CREATE TABLE IF NOT EXISTS open_orders
         (order_id INTEGER PRIMARY KEY, symbol TEXT, shares INTEGER)
     """)
     conn.execute("""
-        CREATE TABLE traded
+        CREATE TABLE IF NOT EXISTS traded
         (execution_id INTEGER, order_id INTEGER, symbol TEXT, shares INTEGER)
     """)
 
@@ -50,7 +54,7 @@ def record_execution(conn: sqlite3.Connection, execution_id: ExecutionID, order_
             symbol,
             {shares} as shares
         FROM open_orders o
-        WHERE o.order_id = order_id
+        WHERE o.order_id = {order_id}
     """)
 
 
@@ -83,44 +87,58 @@ def render_table(table: list[tuple[Any, Any]]) -> str:
     if not table:
         return "[the table is empty]"
 
-    w1 = max(len(str(c)) for c, _ in table)
-    w2 = max(len(str(c)) for _, c in table)
+    width1 = max(len(str(c)) for c, _ in table)
+    width2 = max(len(str(c)) for _, c in table)
 
     return "\n".join(
-        "{c1:<{w1}} {c2:>{w2}}".format(c1=c1, c2=c2, w1=w1, w2=w2)
+        "{c1:<{w1}} {c2:>{w2}}".format(c1=c1, c2=c2, w1=width1, w2=width2)
         for c1, c2 in table
     )
 
 
-def main(*, input: str | None, db_file: str | None, gzipped: bool, top_symbols_count: int) -> None:
+def solution(
+    conn: sqlite3.Connection,
+    overwrite_db: bool,
+    stream: RawIOBase,
+    top_symbols_count: int,
+) -> list[tuple[str, int]]:
+    
+    init_tables(conn, overwrite=overwrite_db)
+    process_messages(conn, stream)
+    return get_top_symbols(conn, top_symbols_count)
+
+
+def main(*,
+    input: str | None,
+    db_file: str | None,
+    overwrite_db: bool,
+    gzipped: bool,
+    top_symbols_count: int
+) -> None:
+    
     if db_file is None:
         db_file = ":memory:"
 
     if input is None:
         with sqlite3.connect(db_file) as conn:
-            top_symbols = solution(conn, sys.stdin.buffer, top_symbols_count)
+            top_symbols = solution(conn, overwrite_db, sys.stdin.buffer, top_symbols_count)
     elif gzipped:
         with sqlite3.connect(db_file) as conn, gzip.open(input, "rb") as stream:
-            top_symbols = solution(conn, stream, top_symbols_count)
+            top_symbols = solution(conn, overwrite_db, stream, top_symbols_count)
     else:
         with sqlite3.connect(db_file) as conn, open(input, "rb") as stream:
-            top_symbols = solution(conn, stream, top_symbols_count)
+            top_symbols = solution(conn, overwrite_db, stream, top_symbols_count)
 
     print(render_table(top_symbols))
 
 
-def solution(conn: sqlite3.Connection, stream: RawIOBase, top_symbols_count: int) -> list[tuple[str, int]]:
-    init_tables(conn)
-    process_messages(conn, stream)
-    return get_top_symbols(conn, top_symbols_count)
-
-
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument("-i", "--input", help="Input file. If omitted, will read from standard input")
+    parser.add_argument("-i", "--input", help="Input file. If omitted, read from standard input")
     parser.add_argument("-f", "--db-file", help="SQLite database file. If omitted, use in-memory DB")
+    parser.add_argument("-r", "--overwrite-db", action="store_true", help="Force recreate relevant DB tables from scratch")
     parser.add_argument("-g", "--gzipped", action="store_true", help="Consume gzipped input")
-    parser.add_argument("-n", "--top-symbols-count", type=int, default=10, help="Number of rows in the output table")
+    parser.add_argument("-n", "--top-symbols-count", type=int, default=10, help="Number of top stocks in the output")
 
     return vars(parser.parse_args())
 

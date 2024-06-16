@@ -1,4 +1,4 @@
-# Implementation notes
+# Top Traded Stocks - implementation notes
 
 ## Overview
 
@@ -9,17 +9,18 @@ On the highest level, the solution works the following way:
 
 ## Running
 
-The solution script is in `main.py` file. It can read from STDIN or from a file with `-i` option and automatically decompress gzip archives with `-g` flag. The number of top stocks to show can be also adjusted with the `-n` option.
-To explore the created SQLite database, you can output it to a file with `-f`.
+The solution script is in `top_traded_stocks.py` file. It can read from STDIN or from a file with `-i` option and automatically decompress gzip archives with `-g` flag.
+
+The number of top stocks to show can be also adjusted with the `-n` option. To explore the created SQLite database, you can output it to a file with `-f`.
 
 Example run command:
 ```shell
-python3 main.py -i pitch_example_data.gz -n 10 -g
+python3 top_traded_stocks.py -i pitch_example_data.gz -n 10 -g
 ```
 
 It's equivalent to
 ```shell
-gzip -cd pitch_example_data.gz | python3 main.py -n 10
+gzip -cd pitch_example_data.gz | python3 top_traded_stocks.py -n 10
 ```
 
 For the solution to be scalable, I implemented this steps in SQL database, using Python's built-in SQLite driver.
@@ -32,7 +33,11 @@ For parsing **PITCH** messages, I've created a little framework, contained in `p
 
 The folder `tests` contains a couple of unit tests for `pitch` library using **pytest**. To run them, install `pytest` and run it as a CLI in the root folder.
 
-Many things that are very important for production code, like logging and functional tests, are not included due to limited time. Other production code concerns are concurrent access, asynchrony and error handling, but they require much more specific requirements to address. I tried to avoid raising exceptions and return `None` in nasty cases, but this error handling is far from perfect.
+Many things that are very important for production code, like logging and functional tests, are not included due to limited time. Other production code concerns are concurrent access, asynchrony and error handling, but they require much more specific requirements. 
+
+## Error handling
+
+I tried to avoid raising exceptions and return `None` in nasty cases, but this error handling is far from perfect.
 
 
 # Original task wording
