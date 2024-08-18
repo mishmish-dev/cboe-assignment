@@ -1,6 +1,6 @@
 # Top Traded Stocks - CBOE take-home technical assignment
 
-In summer 2024. I interviewed at CBOE Europe for a Software Engineer position in Data Pipeline Engineering team. They sent me this assignment after a 30-minute intro talk with the hiring manager. It was followed by a 90-minute panel technical interview with 4 engineers. I was rejected after that, with really vague feedback about my English vocabulary. I asked  for more details, but my emails were ignored.
+In summer 2024, I interviewed at CBOE Europe for a Software Engineer position in Data Pipeline Engineering team. They sent me this assignment after a 30-minute intro talk with the hiring manager. It was followed by a 90-minute panel technical interview with 4 engineers. I was rejected after that, with really vague feedback about my English vocabulary. I asked for more details, but my emails were ignored.
 
 ## Problem wording
 
